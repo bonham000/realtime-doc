@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       doc: mergedDocument,
       userId,
     };
-    PusherInstance.trigger(PUSHER_CHANNEL, PUSHER_EVENT, pusherUpdate);
+    await PusherInstance.trigger(PUSHER_CHANNEL, PUSHER_EVENT, pusherUpdate);
 
     const data: PostResponse = {
       doc: mergedDocument,
