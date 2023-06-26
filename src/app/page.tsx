@@ -60,7 +60,6 @@ export default function Home() {
     const channel = PusherClient.subscribe(PUSHER_CHANNEL);
     channel.bind(PUSHER_EVENT, function (data: PostPayload) {
       if (data.userId !== userId) {
-        console.log(data);
         setDoc(data.doc);
       }
     });
