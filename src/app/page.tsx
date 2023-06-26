@@ -5,6 +5,7 @@ import { BACKEND_API_URL } from "@/app/constants/BackendApiUrl";
 import { LOCAL_STORAGE_USER_ID_KEY } from "@/app/constants/LocalStorageUserIdKey";
 import { PUSHER_CHANNEL, PUSHER_EVENT } from "@/app/constants/PusherConstants";
 import { PostPayload, PostResponse } from "@/types/DocApi";
+import { Nullable } from "@/types/Nullable";
 import axios from "axios";
 import { nanoid } from "nanoid";
 import {
@@ -44,7 +45,10 @@ export default function Home() {
   const [initializing, setInitializing] = useState(true);
   const [doc, setDoc] = useState("");
   const [userId] = useLocalStorage(LOCAL_STORAGE_USER_ID_KEY, nanoid());
-  const inputRef = useRef() as MutableRefObject<HTMLTextAreaElement>;
+  const [cursorPosition, setCursorPosition] = useState<
+    [Nullable<number>, Nullable<number>]
+  >([null, null]);
+  const textareaRef = useRef() as MutableRefObject<HTMLTextAreaElement>;
 
   useEffect(() => {
     const handleFetch = async () => {
@@ -62,6 +66,9 @@ export default function Home() {
       if (data.userId !== userId) {
         console.log("Received Pusher data:");
         console.log(data.doc);
+        const caretStart = textareaRef.current.selectionStart;
+        const caretEnd = textareaRef.current.selectionEnd;
+        setCursorPosition([caretStart, caretEnd]);
         setDoc(data.doc);
       }
     });
@@ -71,6 +78,14 @@ export default function Home() {
       channel.unsubscribe();
     };
   }, [userId]);
+
+  useEffect(() => {
+    const [caretStart, caretEnd] = cursorPosition;
+    if (caretStart != null && caretEnd != null) {
+      textareaRef.current.setSelectionRange(caretStart, caretEnd);
+      setCursorPosition([null, null]);
+    }
+  }, [doc, cursorPosition]);
 
   const handleUpdateDoc = useCallback(
     async (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -91,7 +106,7 @@ export default function Home() {
         disabled={initializing}
         onChange={handleUpdateDoc}
         placeholder={initializing ? "Initializing..." : "Start typing..."}
-        ref={inputRef}
+        ref={textareaRef}
         value={doc}
       />
     </main>
