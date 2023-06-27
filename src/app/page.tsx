@@ -66,8 +66,6 @@ export default function Home() {
     const channel = PusherClient.subscribe(PUSHER_CHANNEL);
     channel.bind(PUSHER_EVENT, function (data: PusherResponse) {
       if (data.userId !== userId && data.timestamp > lastUpdateTime) {
-        console.log("Received Pusher data:");
-        console.log(data.doc);
         const caretStart = textareaRef.current.selectionStart;
         const caretEnd = textareaRef.current.selectionEnd;
         setCursorPosition([caretStart, caretEnd]);
@@ -80,7 +78,9 @@ export default function Home() {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [userId, lastUpdateTime]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const [caretStart, caretEnd] = cursorPosition;
