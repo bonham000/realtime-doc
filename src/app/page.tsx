@@ -6,6 +6,7 @@ import { LOCAL_STORAGE_USER_ID_KEY } from "@/app/constants/LocalStorageUserIdKey
 import { PUSHER_CHANNEL, PUSHER_EVENT } from "@/app/constants/PusherConstants";
 import { PostPayload, PostResponse } from "@/types/DocApi";
 import { Nullable } from "@/types/Nullable";
+import { PusherResponse } from "@/types/PusherResponse";
 import axios from "axios";
 import { nanoid } from "nanoid";
 import {
@@ -44,6 +45,7 @@ const postDoc = async (text: string, userId: string) => {
 export default function Home() {
   const [initializing, setInitializing] = useState(true);
   const [doc, setDoc] = useState("");
+  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const [userId] = useLocalStorage(LOCAL_STORAGE_USER_ID_KEY, nanoid());
   const [cursorPosition, setCursorPosition] = useState<
     [Nullable<number>, Nullable<number>]
@@ -62,14 +64,15 @@ export default function Home() {
 
   useEffect(() => {
     const channel = PusherClient.subscribe(PUSHER_CHANNEL);
-    channel.bind(PUSHER_EVENT, function (data: PostPayload) {
-      if (data.userId !== userId) {
+    channel.bind(PUSHER_EVENT, function (data: PusherResponse) {
+      if (data.userId !== userId && data.timestamp > lastUpdateTime) {
         console.log("Received Pusher data:");
         console.log(data.doc);
         const caretStart = textareaRef.current.selectionStart;
         const caretEnd = textareaRef.current.selectionEnd;
         setCursorPosition([caretStart, caretEnd]);
         setDoc(data.doc);
+        setLastUpdateTime(data.timestamp);
       }
     });
 
@@ -77,7 +80,7 @@ export default function Home() {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [userId]);
+  }, [userId, lastUpdateTime]);
 
   useEffect(() => {
     const [caretStart, caretEnd] = cursorPosition;
