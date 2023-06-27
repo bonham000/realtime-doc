@@ -103,7 +103,7 @@ export default function Home() {
 
   return (
     <main className="p-8 flex flex-col justify-center items-center h-screen">
-      <h1 className="text-3xl mb-8">📝 Realtime Doc! 👀</h1>
+      <h1 className="text-3xl mb-8">Realtime Doc! 📝</h1>
       <textarea
         className="textarea w-full h-full text-lg border-teal-400 mr-4"
         disabled={initializing}
